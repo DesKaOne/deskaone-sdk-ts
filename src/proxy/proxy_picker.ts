@@ -1,0 +1,7 @@
+import { ProxyConfig } from './proxy_config.js';
+export class NoProxyAvailableError extends Error { constructor(message = 'No proxy available') { super(message); this.name = 'NoProxyAvailableError'; } }
+export interface ProxyPicker { pick(): ProxyConfig }
+function assertNotEmpty(proxies: readonly ProxyConfig[]): void { if (proxies.length === 0) throw new NoProxyAvailableError(); }
+export class SingleProxyPicker implements ProxyPicker { private readonly proxy: ProxyConfig; constructor(proxy: ProxyConfig) { this.proxy = proxy.cloneWith({}); } pick(): ProxyConfig { return this.proxy.cloneWith({}); } }
+export class RoundRobinProxyPicker implements ProxyPicker { private readonly proxies: ProxyConfig[]; private index = 0; constructor(proxies: readonly ProxyConfig[]) { assertNotEmpty(proxies); this.proxies = proxies.map((p) => p.cloneWith({})); } pick(): ProxyConfig { const proxy = this.proxies[this.index]; if (!proxy) throw new NoProxyAvailableError(); this.index = (this.index + 1) % this.proxies.length; return proxy.cloneWith({}); } }
+export class RandomProxyPicker implements ProxyPicker { private readonly proxies: ProxyConfig[]; constructor(proxies: readonly ProxyConfig[], private readonly random: () => number = Math.random) { assertNotEmpty(proxies); this.proxies = proxies.map((p) => p.cloneWith({})); } pick(): ProxyConfig { const proxy = this.proxies[Math.floor(this.random() * this.proxies.length)]; if (!proxy) throw new NoProxyAvailableError(); return proxy.cloneWith({}); } }

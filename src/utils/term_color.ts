@@ -1,0 +1,20 @@
+let colorEnabled = process.env.NO_COLOR === undefined;
+export const enabled = (): boolean => colorEnabled;
+export function setTermColorEnabled(value: boolean): void { colorEnabled = value; }
+const wrap = (open: string, close: string, input: string) => colorEnabled ? `${open}${input}${close}` : input;
+export const red = (s: string) => wrap('\x1b[31m', '\x1b[39m', s);
+export const green = (s: string) => wrap('\x1b[32m', '\x1b[39m', s);
+export const yellow = (s: string) => wrap('\x1b[33m', '\x1b[39m', s);
+export const blue = (s: string) => wrap('\x1b[34m', '\x1b[39m', s);
+export const magenta = (s: string) => wrap('\x1b[35m', '\x1b[39m', s);
+export const cyan = (s: string) => wrap('\x1b[36m', '\x1b[39m', s);
+export const white = (s: string) => wrap('\x1b[37m', '\x1b[39m', s);
+export const gray = (s: string) => wrap('\x1b[90m', '\x1b[39m', s);
+export const bold = (s: string) => wrap('\x1b[1m', '\x1b[22m', s);
+export const dim = (s: string) => wrap('\x1b[2m', '\x1b[22m', s);
+export const italic = (s: string) => wrap('\x1b[3m', '\x1b[23m', s);
+export const underline = (s: string) => wrap('\x1b[4m', '\x1b[24m', s);
+export const inverse = (s: string) => wrap('\x1b[7m', '\x1b[27m', s);
+export const strike = (s: string) => wrap('\x1b[9m', '\x1b[29m', s);
+export const rgb = (r: number, g: number, b: number, s: string) => wrap(`\x1b[38;2;${r};${g};${b}m`, '\x1b[39m', s);
+export const xterm = (code: number, s: string) => wrap(`\x1b[38;5;${code}m`, '\x1b[39m', s);

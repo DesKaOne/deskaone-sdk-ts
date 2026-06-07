@@ -1,0 +1,3 @@
+import { describe, expect, it } from 'vitest';
+import { base64ToBytes, bytesToBase64, bytesToHex, bytesToUtf8, concatBytes, hexToBytes, tryHexToBytes, utf8ToBytes } from '../src/index.js';
+describe('bytes', () => { it('converts formats', () => { expect(bytesToHex(Buffer.from([10, 255]), false)).toBe('0AFF'); expect([...hexToBytes('0aff')]).toEqual([10,255]); expect(tryHexToBytes('zz')).toBeUndefined(); expect(bytesToUtf8(utf8ToBytes('halo'))).toBe('halo'); expect(base64ToBytes(bytesToBase64(Buffer.from('x'))).toString()).toBe('x'); expect(concatBytes('a', Buffer.from('b')).toString()).toBe('ab'); }); });
