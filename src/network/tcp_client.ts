@@ -1,0 +1,20 @@
+import net from 'node:net';
+import type { Socket } from 'node:net';
+import tls from 'node:tls';
+import { ProxyType } from '../proxy/proxy_type.js';
+import type { ProxyConfig } from '../proxy/proxy_config.js';
+import type { ProxyPicker } from '../proxy/proxy_picker.js';
+import { TcpConnection, type NetSocket } from './tcp_connection.js';
+import { httpHandlerConn } from './handlers/http.js';
+import { socks4HandlerConn } from './handlers/socks4.js';
+import { socks5HandlerConn } from './handlers/socks5.js';
+export class TcpClientError extends Error { constructor(message: string, options?: ErrorOptions) { super(message, options); this.name = 'TcpClientError'; } }
+export interface TcpClientOptions { timeoutMs?: number; proxyConfig?: ProxyConfig; proxyPicker?: ProxyPicker; localAddress?: string; localPort?: number; secure?: boolean; serverName?: string; rejectUnauthorized?: boolean; ca?: string | Buffer | Array<string | Buffer>; cert?: string | Buffer; key?: string | Buffer; ALPNProtocols?: string[] }
+export class TCPClient {
+  constructor(private readonly options: TcpClientOptions = {}) {}
+  async connect(host: string, port: number): Promise<TcpConnection> { validateHostPort(host, port); const proxy = this.options.proxyPicker?.pick() ?? this.options.proxyConfig; let raw: Socket | undefined; try { raw = await connectSocket(proxy?.host ?? host, proxy?.port ?? port, this.options); raw.setNoDelay(true); let conn = new TcpConnection(raw, false); if (proxy) { if (proxy.type === ProxyType.http) await httpHandlerConn({ conn, proxyConfig: proxy, dstHost: host, dstPort: port, timeoutMs: this.options.timeoutMs }); else if (proxy.type === ProxyType.socks4) await socks4HandlerConn({ conn, proxyConfig: proxy, host, port, timeoutMs: this.options.timeoutMs }); else await socks5HandlerConn({ conn, proxyConfig: proxy, host, port, timeoutMs: this.options.timeoutMs }); }
+      if (this.options.secure) conn = await this.upgradeTls(conn, host); return conn; } catch (error) { raw?.destroy(); throw new TcpClientError(`TCP connection failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error }); } }
+  private async upgradeTls(conn: TcpConnection, host: string): Promise<TcpConnection> { return new Promise((resolve, reject) => { const socket = tls.connect({ socket: conn.socket as Socket, servername: this.options.serverName ?? host, rejectUnauthorized: this.options.rejectUnauthorized, ca: this.options.ca, cert: this.options.cert, key: this.options.key, ALPNProtocols: this.options.ALPNProtocols }, () => { socket.setNoDelay(true); cleanup(); resolve(new TcpConnection(socket, true)); }); const cleanup = () => { if (timer) clearTimeout(timer); socket.off('error', onError); }; const onError = (e: Error) => { cleanup(); socket.destroy(); reject(e); }; socket.once('error', onError); const timer = this.options.timeoutMs === undefined ? undefined : setTimeout(() => onError(new Error(`TLS handshake timed out after ${this.options.timeoutMs}ms`)), this.options.timeoutMs); }); }
+}
+function validateHostPort(host: string, port: number): void { if (!host.trim()) throw new TypeError('host must not be empty'); if (!Number.isInteger(port) || port < 1 || port > 65535) throw new TypeError('port must be between 1 and 65535'); }
+function connectSocket(host: string, port: number, options: TcpClientOptions): Promise<Socket> { return new Promise((resolve, reject) => { const socket = net.connect({ host, port, localAddress: options.localAddress, localPort: options.localPort }); let timer: NodeJS.Timeout | undefined; const cleanup = () => { if (timer) clearTimeout(timer); socket.off('connect', onConnect); socket.off('error', onError); }; const onConnect = () => { cleanup(); resolve(socket); }; const onError = (e: Error) => { cleanup(); socket.destroy(); reject(e); }; socket.once('connect', onConnect); socket.once('error', onError); if (options.timeoutMs !== undefined) timer = setTimeout(() => onError(new Error(`TCP connect timed out after ${options.timeoutMs}ms`)), options.timeoutMs); }); }

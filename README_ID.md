@@ -1,22 +1,22 @@
 # DesKaOne SDK TypeScript
 
-English | [Bahasa Indonesia](README_ID.md)
+[English](README.md) | Bahasa Indonesia
 
-DesKaOne SDK TypeScript is the Phase 1 foundation for network features ported from the DesKaOne SDK family. It provides manual TCP, proxy, HTTP/1.1, and WebSocket support using Node.js built-ins only.
+DesKaOne SDK TypeScript adalah fondasi Phase 1 untuk fitur jaringan yang di-port dari keluarga DesKaOne SDK. Paket ini menyediakan TCP, proxy, HTTP/1.1, dan WebSocket manual dengan built-in Node.js saja.
 
-## Features
+## Fitur
 
-- Node.js >= 20, ESM, strict TypeScript.
-- Proxy configuration and single, round-robin, or random proxy pickers.
-- Direct TCP, proxied TCP, and TLS-over-tunnel connections.
-- HTTP CONNECT, SOCKS4/SOCKS4a, and SOCKS5 proxy handlers.
-- Manual HTTP/1.1 client with redirects, content-length, chunked, and close-delimited bodies.
-- Manual WebSocket client with masking, ping/pong, close handshake, and reconnect helper.
-- Utility helpers for bytes, debouncing, lightweight events, colors, and logging.
+- Node.js >= 20, ESM, TypeScript strict.
+- Konfigurasi proxy dan pemilih proxy single, round-robin, atau random.
+- Koneksi TCP langsung, TCP via proxy, dan TLS melalui tunnel.
+- Handler proxy HTTP CONNECT, SOCKS4/SOCKS4a, dan SOCKS5.
+- Client HTTP/1.1 manual dengan redirect, content-length, chunked, dan body sampai koneksi ditutup.
+- Client WebSocket manual dengan masking, ping/pong, close handshake, dan helper reconnect.
+- Utilitas bytes, debouncer, event ringan, warna terminal, dan logger.
 
-Phase 1 does not include storage or database features.
+Phase 1 belum menyertakan fitur storage atau database.
 
-## Install
+## Instal
 
 ```bash
 npm install deskaone-sdk-ts
@@ -28,7 +28,7 @@ npm install deskaone-sdk-ts
 import { HttpClient, ProxyConfig, WebSocketClient, ReconnectWebSocketClient } from 'deskaone-sdk-ts';
 ```
 
-## HTTP direct example
+## Contoh HTTP langsung
 
 ```ts
 const client = new HttpClient();
@@ -36,7 +36,7 @@ const res = await client.get('http://example.com/');
 console.log(res.statusCode, res.text());
 ```
 
-## HTTP over proxy example
+## Contoh HTTP lewat proxy
 
 ```ts
 const proxyConfig = ProxyConfig.fromUrlString(process.env.PROXY_URL ?? 'http://proxy.example:8080');
@@ -44,7 +44,7 @@ const client = new HttpClient({ proxyConfig });
 const res = await client.get('http://example.com/');
 ```
 
-## HTTPS over proxy example
+## Contoh HTTPS lewat proxy
 
 ```ts
 const proxyConfig = ProxyConfig.fromUrlString(process.env.PROXY_URL!);
@@ -53,24 +53,24 @@ const res = await client.get('https://api.ipify.org/');
 console.log(res.text());
 ```
 
-## WebSocket wss example
+## Contoh WebSocket wss
 
 ```ts
 const ws = await WebSocketClient.connect('wss://ws.postman-echo.com/raw');
 ws.on('text', console.log);
 await ws.sendText('halo dari DesKaOne SDK TypeScript');
-await ws.close(1000, 'done');
+await ws.close(1000, 'selesai');
 ```
 
-## WebSocket wss over proxy example
+## Contoh WebSocket wss lewat proxy
 
 ```ts
 const proxyConfig = ProxyConfig.fromUrlString(process.env.PROXY_URL!);
 const ws = await WebSocketClient.connect('wss://ws.postman-echo.com/raw', { proxyConfig });
-await ws.sendText('hello over proxy');
+await ws.sendText('hello via proxy');
 ```
 
-## Reconnect WebSocket example
+## Contoh Reconnect WebSocket
 
 ```ts
 const reconnect = new ReconnectWebSocketClient({
@@ -83,13 +83,13 @@ const reconnect = new ReconnectWebSocketClient({
 await reconnect.run();
 ```
 
-## PROXY_URL env example
+## Contoh env PROXY_URL
 
 ```bash
 export PROXY_URL='socks5://username:password@proxy.example:1080'
 npm run example:http
 ```
 
-## Security warning
+## Peringatan keamanan
 
-Never hardcode proxy credentials, API keys, tokens, or passwords. Use environment variables or a secure secret manager, and keep `.env` files out of git.
+Jangan pernah hardcode kredensial proxy, API key, token, atau password. Gunakan environment variable atau secret manager yang aman, dan jangan commit file `.env` ke git.

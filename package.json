@@ -1,0 +1,26 @@
+{
+  "name": "deskaone-sdk-ts",
+  "version": "0.1.0",
+  "description": "TypeScript SDK foundation for DesKaOne network, proxy, HTTP, and WebSocket features.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run build && npm test",
+    "example:http": "tsx examples/http_client_example.ts",
+    "example:websocket": "tsx examples/websocket_client_example.ts",
+    "example:websocket:reconnect": "tsx examples/websocket_reconnect_example.ts"
+  },
+  "files": ["dist", "README.md", "README_ID.md", "LICENSE", "CHANGELOG.md"],
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}
